@@ -6,48 +6,37 @@ import {
   Footer,
   Header,
   Hero,
-  Method,
-  Nutrition,
   Packages,
-  Programs,
-  Research,
-  ServiceAreas,
-  Sessions,
-  Testimonials,
-  WhatsAppBand,
+  Requirements,
+  Reviews,
+  Team,
   WhoFor,
 } from "@/templates/fitness-fitiminded/sections";
 import { studio } from "@/templates/fitness-fitiminded/content";
 
 export const metadata: Metadata = {
-  title: `${studio.brand} — ${studio.tagline}, Mumbai`,
+  title: `${studio.brand} — ${studio.tagline}`,
   description:
-    "Private at-home personal training across Worli, Lower Parel, Bandra, Juhu and South Mumbai. One assigned coach, equipment brought to you, published session pricing, nutrition included.",
+    "One-on-one online and home personal training by Saurabh Waghmare, a certified trainer with 9+ years of experience. Evidence-based workouts, diet guidance and progress tracking.",
   openGraph: {
-    title: `${studio.brand} — Elite personal training at your address`,
-    description:
-      "At-home personal training in Mumbai. Same coach every session, equipment carried in, packages priced by session.",
+    title: `${studio.brand} — ${studio.tagline}`,
+    description: "Certified one-on-one personal training, online and at home. Packages from ₹7,500.",
     type: "website",
   },
 };
 
-export default function FitiMindedTemplate() {
+export default function HomePage() {
   return (
     <TemplateShell theme="theme-fitiminded">
       <Header />
       <main>
         <Hero />
-        <Method />
-        <WhoFor />
-        <Programs />
-        <Sessions />
-        <Packages />
         <About />
-        <Nutrition />
-        <Research />
-        <Testimonials />
-        <ServiceAreas />
-        <WhatsAppBand />
+        <Packages />
+        <WhoFor />
+        <Requirements />
+        <Reviews />
+        <Team />
         <Contact />
       </main>
       <Footer />

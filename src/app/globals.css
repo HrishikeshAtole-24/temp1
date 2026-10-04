@@ -167,27 +167,25 @@
    ================================================================== */
 
 /* ------------------------------------------------------------------
-   FitiMinded — elite at-home personal training
-   Ivory ground, espresso ink, bronze signal. The lightest, most
-   editorial palette in the kit, built to carry heavy motion without
-   looking loud.
+   Saurabh Waghmare — light warm theme
+   Cream ground, warm brown ink, terracotta accent.
    ------------------------------------------------------------------ */
 .theme-fitiminded {
-  --pk-radius: 0.625rem;
+  --pk-radius: 0.75rem;
 
-  --pk-bg: 250 248 244;
-  --pk-surface: 255 254 251;
-  --pk-subtle: 243 238 230;
-  --pk-line: 228 221 209;
-  --pk-ink: 26 24 22;
-  --pk-muted: 100 93 84;
+  --pk-bg: 252 248 242;
+  --pk-surface: 255 252 247;
+  --pk-subtle: 247 239 229;
+  --pk-line: 235 223 207;
+  --pk-ink: 43 31 24;
+  --pk-muted: 110 94 82;
 
-  --pk-brand: 26 24 22;
-  --pk-brand-soft: 240 235 227;
-  --pk-brand-fg: 250 248 244;
+  --pk-brand: 58 38 28;
+  --pk-brand-soft: 243 230 214;
+  --pk-brand-fg: 252 248 242;
 
-  --pk-accent: 122 94 52;
-  --pk-accent-soft: 246 238 226;
+  --pk-accent: 168 92 46;
+  --pk-accent-soft: 250 235 220;
   --pk-accent-fg: 255 255 255;
 }
 
