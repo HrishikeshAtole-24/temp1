@@ -27,7 +27,6 @@ export function Section({
   return (
     <section
       className={cn(
-        "scroll-mt-16",
         space === "compact" && "py-10 sm:py-14",
         space === "default" && "py-14 sm:py-20",
         space === "loose" && "py-16 sm:py-24",

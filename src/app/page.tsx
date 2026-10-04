@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 export default function FitiMindedTemplate() {
   return (
-    <TemplateShell theme="theme-fitiminded" preview="Elite Home Training · FitiMinded">
+    <TemplateShell theme="theme-fitiminded">
       <Header />
       <main>
         <Hero />

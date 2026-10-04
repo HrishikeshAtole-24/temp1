@@ -2,10 +2,8 @@ import { ReadingProgress } from "./reading-progress";
 import { cn } from "@/lib/utils";
 
 interface TemplateShellProps {
-  /** Theme class from globals.css, e.g. "theme-ca". */
+  /** Theme class from globals.css, e.g. "theme-fitiminded". */
   theme: string;
-  /** Not rendered outside the ProWebKit gallery. */
-  preview?: string;
   children: React.ReactNode;
 }
 

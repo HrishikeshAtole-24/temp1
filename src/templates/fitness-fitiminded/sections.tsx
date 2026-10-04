@@ -38,7 +38,7 @@ import {
   whoFor,
 } from "./content";
 
-const telHref = `tel:${studio.phone.replace(/[\s+]/g, "")}`;
+const telHref = `tel:${studio.phone.replace(/[^\d+]/g, "")}`;
 const wa = waLink(studio.whatsapp, hero.whatsappMessage);
 
 /** Stagger helper — `.pk-stagger` reads --i to finish each child later. */
@@ -146,7 +146,7 @@ export function Hero() {
           {/* Portrait plate — swap the inner span for a photograph */}
           <div className="pk-fade pk-zoom relative overflow-hidden rounded-card border border-line bg-subtle" style={delay(420)}>
             <span className="block aspect-[4/5] w-full bg-brand-soft" aria-hidden />
-            <div className="absolute inset-x-5 bottom-5 rounded-card border border-line bg-bg/92 p-5 backdrop-blur-sm">
+            <div className="absolute inset-x-5 bottom-5 rounded-card border border-line bg-bg/90 p-5 backdrop-blur-sm">
               <p className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{studio.founder}</p>
               <p className="mt-0.5 text-sm text-accent">{studio.role}</p>
               <p className="mt-3 flex items-center gap-2 text-xs text-muted">
@@ -162,12 +162,12 @@ export function Hero() {
         <Container>
           <dl className="pk-stagger grid grid-cols-2 divide-line sm:grid-cols-4 sm:divide-x">
             {stats.map((stat, index) => (
-              <div key={stat.label} style={stagger(index)} className="px-2 py-7 sm:px-6">
-                <dt className="text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-ink">
-                  {stat.value}
-                </dt>
-                <dd className="mt-1.5 text-[11px] uppercase tracking-[0.18em] text-muted">
+              <div key={stat.label} style={stagger(index)} className="flex flex-col-reverse px-2 py-7 sm:px-6">
+                <dt className="mt-1.5 text-[11px] uppercase tracking-[0.18em] text-muted">
                   {stat.label}
+                </dt>
+                <dd className="text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-ink">
+                  {stat.value}
                 </dd>
               </div>
             ))}
@@ -399,7 +399,7 @@ export function About() {
           </dl>
         </div>
 
-        <div id="certifications" className="scroll-mt-20">
+        <div id="certifications">
           <p className="flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-muted">
             <span aria-hidden className="h-px w-6 bg-accent" />
             Certifications
@@ -644,8 +644,9 @@ export function Contact() {
 
         <form
           className="h-fit rounded-card border border-line bg-bg p-8 sm:p-10"
-          action="#"
+          action={`mailto:${studio.email}`}
           method="post"
+          encType="text/plain"
           aria-label="Consultation enquiry"
         >
           <h2 className="text-2xl font-semibold tracking-[-0.025em] text-ink">Contact me</h2>
@@ -751,7 +752,6 @@ export function Footer() {
         },
       ]}
       legal={`© ${new Date().getFullYear()} ${studio.brand}. Coaching is not medical advice. Clients with a managed condition train only with written clearance from their treating doctor.`}
-      note="A ProWebKit demo — details are fictional."
     />
   );
 }
