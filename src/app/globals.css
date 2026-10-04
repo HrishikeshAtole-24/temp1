@@ -1,0 +1,338 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   Design tokens
+   Every color is an "R G B" triplet so Tailwind can apply opacity
+   modifiers (bg-brand/10). Swapping a `.theme-*` class on a wrapper
+   re-skins every shared component underneath it.
+   ------------------------------------------------------------------ */
+
+:root {
+  --pk-radius: 0.75rem;
+
+  --pk-bg: 255 255 255;
+  --pk-surface: 248 250 252;
+  --pk-subtle: 241 245 249;
+  --pk-line: 226 232 240;
+  --pk-ink: 15 23 42;
+  --pk-muted: 100 116 139;
+
+  --pk-brand: 37 99 235;
+  --pk-brand-soft: 231 238 254;
+  --pk-brand-fg: 255 255 255;
+
+  --pk-accent: 13 148 136;
+  --pk-accent-soft: 224 246 243;
+  --pk-accent-fg: 255 255 255;
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Anchor jumps land below the sticky header rather than under it. */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+
+  ::selection {
+    @apply bg-accent/25;
+  }
+}
+
+@layer utilities {
+  /* Section separator that reads as a hairline, not a border */
+  .hairline {
+    @apply border-t border-line;
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgb(var(--pk-line) / 0.6) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--pk-line) / 0.6) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(rgb(var(--pk-line)) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Long-page ergonomics
+   These pages are deliberately complete, which makes them tall. The
+   rules below make the scroll feel navigable rather than endless.
+   ------------------------------------------------------------------ */
+
+@keyframes pk-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Sections fade up as they enter the viewport, driven entirely by the
+ * scroll position — no JavaScript, no IntersectionObserver, and no risk
+ * of content staying invisible: the default state is fully visible and
+ * the animation only applies where the browser supports it.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: pk-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 42%;
+    }
+  }
+}
+
+/* Thin reading-progress rail pinned to the top of the viewport. */
+.pk-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 60;
+  height: 2px;
+  transform-origin: 0 50%;
+  background: rgb(var(--pk-accent));
+  will-change: transform;
+}
+
+/* Floating "back to top" control. */
+.pk-to-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 55;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+@media (min-width: 640px) {
+  .pk-to-top {
+    right: 2rem;
+    bottom: 2rem;
+  }
+}
+
+@media print {
+  .pk-progress,
+  .pk-to-top {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================================================================
+   Additional template themes
+   Each block is a complete palette; the route wraps the page in the
+   matching class and every shared primitive re-skins itself.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   FitiMinded — elite at-home personal training
+   Ivory ground, espresso ink, bronze signal. The lightest, most
+   editorial palette in the kit, built to carry heavy motion without
+   looking loud.
+   ------------------------------------------------------------------ */
+.theme-fitiminded {
+  --pk-radius: 0.625rem;
+
+  --pk-bg: 250 248 244;
+  --pk-surface: 255 254 251;
+  --pk-subtle: 243 238 230;
+  --pk-line: 228 221 209;
+  --pk-ink: 26 24 22;
+  --pk-muted: 100 93 84;
+
+  --pk-brand: 26 24 22;
+  --pk-brand-soft: 240 235 227;
+  --pk-brand-fg: 250 248 244;
+
+  --pk-accent: 122 94 52;
+  --pk-accent-soft: 246 238 226;
+  --pk-accent-fg: 255 255 255;
+}
+
+/* ------------------------------------------------------------------
+   Motion layer
+   Shared by the portfolio-grade templates (FitiMinded, photography,
+   talent). Every animation here is CSS: nothing ships JavaScript, the
+   default state is always the finished state, so an unsupported browser
+   simply shows the content, and the whole block is skipped under
+   prefers-reduced-motion.
+
+   Load-in    .pk-clip .pk-wipe .pk-fade   (delay via --d)
+   On scroll  .pk-stagger > *  .pk-rail  .pk-drift   (order via --i)
+   Ambient    .pk-marquee-track .pk-sheen .pk-zoom .pk-link
+   ------------------------------------------------------------------ */
+
+@keyframes pk-rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes pk-clip {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(0.4em); }
+  to   { opacity: 1; clip-path: inset(0 0 -0.2em 0); transform: none; }
+}
+
+@keyframes pk-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes pk-sheen {
+  from { transform: translateX(-130%) skewX(-18deg); }
+  to   { transform: translateX(260%) skewX(-18deg); }
+}
+
+@keyframes pk-draw {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* Editorial wipe — the image arrives from its own edge rather than fading. */
+@keyframes pk-wipe {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* Slow vertical drift for full-bleed plates, tied to scroll. */
+@keyframes pk-drift {
+  from { transform: translateY(-3%) scale(1.06); }
+  to   { transform: translateY(3%) scale(1.06); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Above-the-fold copy reveals on load, line by line via --d. */
+  .pk-clip {
+    animation: pk-clip 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .pk-fade {
+    animation: pk-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .pk-wipe {
+    animation: pk-wipe 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  /* Service-area ticker. Duplicate the list in markup so -50% loops seamlessly. */
+  .pk-marquee-track {
+    animation: pk-marquee 38s linear infinite;
+    will-change: transform;
+  }
+  .pk-marquee:hover .pk-marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* A light sweep across the primary action on hover. */
+  .pk-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
+    transform: translateX(-130%) skewX(-18deg);
+    pointer-events: none;
+  }
+  .pk-sheen:hover::after {
+    animation: pk-sheen 0.9s ease-out;
+  }
+
+  /* Scroll-driven: only where the browser supports it, purely additive. */
+  @supports (animation-timeline: view()) {
+    /* Children stagger by finishing progressively later as you scroll in. */
+    .pk-stagger > * {
+      animation: pk-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry calc(34% + (var(--i, 0) * 7%));
+    }
+
+    /* Parallax on full-bleed plates. */
+    .pk-drift {
+      animation: pk-drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* The process rail draws itself down the page. */
+    .pk-rail {
+      transform-origin: 50% 0;
+      animation: pk-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 55%;
+    }
+  }
+}
+
+/* Slow zoom on image placeholders — swap the block for a photograph. */
+.pk-zoom img,
+.pk-zoom > span {
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pk-zoom:hover img,
+.pk-zoom:hover > span {
+  transform: scale(1.04);
+}
+
+/* Hairline that draws in from the left on hover. */
+.pk-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pk-link:hover {
+  background-size: 100% 1px;
+}
+
+/* ==================================================================
+   Photography
+   ================================================================== */
+
+/* ==================================================================
+   Actors & Models
+   ================================================================== */
