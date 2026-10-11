@@ -1,5 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, Award, Check, Dumbbell, Mail, MessageCircle, ShieldCheck, Star } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  BookOpen,
+  Check,
+  ChevronDown,
+  Dumbbell,
+  Home,
+  Mail,
+  MessageCircle,
+  ShieldCheck,
+  Star,
+  Video,
+} from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { SiteFooter } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
@@ -8,19 +22,26 @@ import { cn, waLink } from "@/lib/utils";
 import {
   about,
   enquiryGoals,
+  expertise,
   hero,
   navLinks,
   packages,
   requirements,
+  research,
   reviews,
   stats,
   studio,
-  team,
   whoFor,
 } from "./content";
 import { WhatsAppForm } from "./whatsapp-form";
 
 const wa = waLink(studio.whatsapp, hero.whatsappMessage);
+
+/** Footer "Careers" link — opens WhatsApp with the application fields to fill in. */
+const careersWa = waLink(
+  studio.whatsapp,
+  "Hi! I would like to apply for a career with you.\n\nName:\nCareer / Profession:\nLocation:\nInstagram Profile:\nCertification:",
+);
 
 /** Stagger helper — `.pk-stagger` reads --i to finish each child later. */
 const stagger = (index: number) => ({ "--i": index }) as React.CSSProperties;
@@ -84,14 +105,29 @@ export function Hero() {
               {hero.subtitle}
             </p>
 
-            <ul className="pk-fade mt-9 space-y-3" style={delay(660)}>
-              {hero.markers.map((marker) => (
-                <li key={marker} className="flex items-start gap-3 text-sm text-ink">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  {marker}
-                </li>
-              ))}
-            </ul>
+            <div className="pk-fade mt-9" style={delay(660)}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{hero.flexible.eyebrow}</p>
+              <p className="mt-1 text-sm font-semibold text-ink">{hero.flexible.title}</p>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {hero.flexible.modes.map((mode, index) => {
+                  const Icon = index === 0 ? Video : Home;
+                  return (
+                    <li
+                      key={mode.label}
+                      className="flex items-start gap-3 rounded-xl border border-line bg-surface/80 p-4"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-medium text-ink">{mode.label}</span>
+                        <span className="mt-0.5 block text-xs text-accent">{mode.note}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
 
             <div className="pk-fade mt-10 flex flex-wrap items-center gap-3" style={delay(760)}>
               <Link
@@ -155,7 +191,7 @@ export function About() {
     <Section id="about">
       <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div>
-          <SectionHeading eyebrow="About me" title={about.title} />
+          <SectionHeading eyebrow="About me" title={about.title} description={about.subtitle} />
           <div className="mt-7 space-y-5">
             {about.paragraphs.map((paragraph) => (
               <p key={paragraph.slice(0, 22)} className="text-[17px] leading-[1.8] text-muted">
@@ -216,7 +252,14 @@ export function Packages() {
             <div className="mt-6 space-y-3">
               {pack.prices.map((price) => (
                 <div key={price.label} className="flex items-baseline justify-between gap-4">
-                  <span className="text-sm text-muted">{price.label}</span>
+                  <span className="text-sm text-muted">
+                    {price.label}
+                    {price.note ? (
+                      <span className="ml-2 inline-flex rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-accent">
+                        {price.note}
+                      </span>
+                    ) : null}
+                  </span>
                   <span className="text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-ink">
                     {price.price}
                   </span>
@@ -226,9 +269,42 @@ export function Packages() {
 
             <ul className="mt-6 flex-1 space-y-2.5 border-t border-line pt-6">
               {pack.includes.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-[15px] text-muted">
-                  <Check className="mt-1 h-3.5 w-3.5 shrink-0 text-accent" />
-                  {item}
+                <li key={item.label} className="text-[15px] text-muted">
+                  {item.detail ? (
+                    <details className="group/more">
+                      <summary className="flex cursor-pointer list-none items-start gap-2.5 [&::-webkit-details-marker]:hidden">
+                        <Check className="mt-1 h-3.5 w-3.5 shrink-0 text-accent" />
+                        <span>
+                          {item.label}
+                          <span className="ml-2 inline-flex items-center gap-0.5 whitespace-nowrap text-sm font-medium text-accent underline-offset-2 hover:underline">
+                            <span className="group-open/more:hidden">Click here</span>
+                            <span className="hidden group-open/more:inline">Hide</span>
+                            <ChevronDown className="h-3.5 w-3.5 transition-transform group-open/more:rotate-180" />
+                          </span>
+                        </span>
+                      </summary>
+                      <div className="ml-6 mt-3 rounded-xl border border-line bg-surface p-4">
+                        <p className="text-sm font-semibold text-ink">{item.detail.title}</p>
+                        <p className="mt-0.5 text-sm text-accent">{item.detail.heading}</p>
+                        <ul className="mt-2.5 space-y-1.5">
+                          {item.detail.points.map((point) => (
+                            <li key={point} className="flex items-start gap-2 text-sm">
+                              <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" />
+                              {point}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </details>
+                  ) : (
+                    <div className="flex items-start gap-2.5">
+                      <Check className="mt-1 h-3.5 w-3.5 shrink-0 text-accent" />
+                      <span>
+                        {item.label}
+                        {item.note ? <span className="block text-sm text-accent">{item.note}</span> : null}
+                      </span>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -248,6 +324,31 @@ export function Packages() {
           </article>
         ))}
       </div>
+    </Section>
+  );
+}
+
+/* ── Training expertise ────────────────────────────────────────────── */
+export function Expertise() {
+  return (
+    <Section id="expertise" tone="surface">
+      <SectionHeading
+        eyebrow="Training expertise"
+        title="What I coach"
+        description="Specialist training across strength, mobility, rehabilitation and every stage of life."
+      />
+      <ul className="pk-stagger mt-10 flex flex-wrap gap-3">
+        {expertise.map((item, index) => (
+          <li
+            key={item}
+            style={stagger(index)}
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-bg px-5 py-2.5 text-[15px] font-medium text-ink transition-colors hover:border-accent hover:text-accent"
+          >
+            <Dumbbell className="h-4 w-4 text-accent" />
+            {item}
+          </li>
+        ))}
+      </ul>
     </Section>
   );
 }
@@ -326,43 +427,38 @@ export function Reviews() {
   );
 }
 
-/* ── Join the team ─────────────────────────────────────────────────── */
-export function Team() {
+/* ── Research & articles ───────────────────────────────────────────── */
+export function Research() {
   return (
-    <Section id="team">
-      <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-        <div>
-          <SectionHeading eyebrow="Join the team" title={team.title} description={team.body} />
-          <ul className="pk-stagger mt-8 flex flex-wrap gap-2.5">
-            {team.roles.map((role, index) => (
-              <li
-                key={role}
-                style={stagger(index)}
-                className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-ink"
-              >
-                {role}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <WhatsAppForm
-          id="team"
-          phone={studio.whatsapp}
-          title="Apply to join"
-          subtitle="Takes less than a minute."
-          icon="join"
-          heading="Hi! I would like to join your team."
-          submitLabel="Send my details"
-          className="h-fit"
-          fields={[
-            { name: "name", label: "Name", icon: "user", placeholder: "Your full name", required: true },
-            { name: "profession", label: "Career / Profession", icon: "briefcase", placeholder: "e.g. Physiotherapist", required: true },
-            { name: "location", label: "Location", icon: "map", placeholder: "Your city", required: true },
-            { name: "instagram", label: "Instagram Profile", icon: "instagram", placeholder: "@yourhandle" },
-            { name: "certification", label: "Certification", icon: "award", placeholder: "Your certifications", wide: true },
-          ]}
-        />
+    <Section id="research">
+      <SectionHeading eyebrow="Research & articles" title={research.title} description={research.body} />
+      <div className="pk-stagger mt-10 grid gap-6 sm:grid-cols-2">
+        {research.articles.map((article, index) => (
+          <article
+            key={article.title}
+            style={stagger(index)}
+            className="flex flex-col rounded-2xl border border-line bg-surface p-7 transition-transform duration-300 hover:-translate-y-1"
+          >
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
+              <BookOpen className="h-3 w-3" />
+              {article.tag}
+            </span>
+            <h3 className="mt-4 text-lg font-semibold tracking-[-0.015em] text-ink">{article.title}</h3>
+            <p className="mt-2.5 flex-1 text-[15px] leading-relaxed text-muted">{article.body}</p>
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noreferrer"
+              className="group mt-5 flex items-start justify-between gap-3 border-t border-line pt-4 text-xs text-muted transition-colors hover:text-accent"
+            >
+              <span>
+                <span className="font-semibold uppercase tracking-[0.12em]">Read the source</span>
+                <span className="mt-0.5 block italic">{article.source}</span>
+              </span>
+              <ArrowUpRight className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </a>
+          </article>
+        ))}
       </div>
     </Section>
   );
@@ -415,10 +511,37 @@ export function Contact() {
           submitLabel="Send enquiry"
           className="h-fit"
           fields={[
-            { name: "name", label: "Name", icon: "user", placeholder: "Your full name", required: true },
-            { name: "age", label: "Age", type: "number", icon: "calendar", placeholder: "e.g. 28", required: true },
-            { name: "mode", label: "Online / Offline", options: ["Online", "Offline"], required: true },
-            { name: "location", label: "Location", icon: "map", placeholder: "Your city / area", required: true },
+            {
+              name: "name",
+              label: "Name",
+              icon: "user",
+              placeholder: "Your full name",
+              required: true,
+              minLength: 2,
+              pattern: "[A-Za-z][A-Za-z .'-]*",
+              patternMessage: "Name can only contain letters and spaces",
+            },
+            {
+              name: "age",
+              label: "Age",
+              type: "number",
+              icon: "calendar",
+              placeholder: "e.g. 28",
+              required: true,
+              min: 5,
+              max: 100,
+            },
+            { name: "mode", label: "Online / Offline", options: ["Online", "Offline (Mumbai only)"], required: true },
+            {
+              name: "location",
+              label: "Location",
+              icon: "map",
+              placeholder: "Your city / area",
+              required: true,
+              minLength: 2,
+              pattern: "[A-Za-z][A-Za-z ,.'/()-]*",
+              patternMessage: "Location can only contain letters, spaces and commas",
+            },
             { name: "goal", label: "Fitness Goal", icon: "target", options: enquiryGoals, required: true, wide: true },
           ]}
         />
@@ -437,6 +560,7 @@ export function Footer() {
           title: "Training",
           links: [
             { label: "Packages", href: "#packages" },
+            { label: "Expertise", href: "#expertise" },
             { label: "Who can join", href: "#who" },
             { label: "Requirements", href: "#requirements" },
           ],
@@ -446,8 +570,9 @@ export function Footer() {
           links: [
             { label: "About me", href: "#about" },
             { label: "Certifications", href: "#certifications" },
+            { label: "Research", href: "#research" },
             { label: "Reviews", href: "#reviews" },
-            { label: "Join the team", href: "#team" },
+            { label: "Careers", href: careersWa },
           ],
         },
         {

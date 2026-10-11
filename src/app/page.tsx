@@ -3,13 +3,14 @@ import { TemplateShell } from "@/components/layout/template-shell";
 import {
   About,
   Contact,
+  Expertise,
   Footer,
   Header,
   Hero,
   Packages,
   Requirements,
+  Research,
   Reviews,
-  Team,
   WhoFor,
 } from "@/templates/fitness-fitiminded/sections";
 import { studio } from "@/templates/fitness-fitiminded/content";
@@ -32,11 +33,12 @@ export default function HomePage() {
       <main>
         <Hero />
         <About />
+        <Expertise />
         <Packages />
         <WhoFor />
         <Requirements />
+        <Research />
         <Reviews />
-        <Team />
         <Contact />
       </main>
       <Footer />

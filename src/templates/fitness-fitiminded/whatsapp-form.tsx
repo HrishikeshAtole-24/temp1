@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import {
+  AlertCircle,
   ArrowRight,
   Award,
   Briefcase,
@@ -40,6 +42,13 @@ export interface FormField {
   options?: string[];
   icon?: IconName;
   required?: boolean;
+  minLength?: number;
+  /** Number fields only. */
+  min?: number;
+  max?: number;
+  /** Whole-value regex source, e.g. "[A-Za-z ]+". */
+  pattern?: string;
+  patternMessage?: string;
   /** Spans both columns on wide screens. */
   wide?: boolean;
 }
@@ -57,8 +66,33 @@ interface WhatsAppFormProps {
   className?: string;
 }
 
+/** Returns an error message, or null when the value is fine. */
+function validate(field: FormField, raw: string): string | null {
+  const value = raw.trim();
+  if (!value) {
+    if (!field.required) return null;
+    return field.options ? `Please select ${field.label.toLowerCase()}` : `${field.label} is required`;
+  }
+  if (field.minLength && value.length < field.minLength) {
+    return `${field.label} must be at least ${field.minLength} characters`;
+  }
+  if (field.type === "number") {
+    const number = Number(value);
+    if (!Number.isInteger(number)) return `Enter a valid ${field.label.toLowerCase()}`;
+    if ((field.min !== undefined && number < field.min) || (field.max !== undefined && number > field.max)) {
+      return `${field.label} must be between ${field.min ?? 0} and ${field.max ?? "any"}`;
+    }
+  }
+  if (field.pattern && !new RegExp(`^(?:${field.pattern})$`).test(value)) {
+    return field.patternMessage ?? `Enter a valid ${field.label.toLowerCase()}`;
+  }
+  return null;
+}
+
 const control =
   "h-12 w-full rounded-xl border border-line bg-surface text-[15px] text-ink placeholder:text-muted/60 transition focus:border-accent focus:bg-bg focus:outline-none focus:ring-4 focus:ring-accent/15";
+
+const invalidControl = "border-red-500 focus:border-red-500 focus:ring-red-500/15";
 
 /**
  * Collects the fields and opens WhatsApp with them pre-filled, so the
@@ -76,17 +110,63 @@ export function WhatsAppForm({
   className,
 }: WhatsAppFormProps) {
   const HeaderIcon = icons[icon];
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const found: Record<string, string> = {};
+    for (const field of fields) {
+      const message = validate(field, String(data.get(field.name) ?? ""));
+      if (message) found[field.name] = message;
+    }
+    setErrors(found);
+
+    const firstInvalid = fields.find((field) => found[field.name]);
+    if (firstInvalid) {
+      form.querySelector<HTMLElement>(`[name="${firstInvalid.name}"]`)?.focus();
+      return;
+    }
+
     const lines = fields.map((field) => `${field.label}: ${String(data.get(field.name) ?? "").trim() || "-"}`);
     window.open(waLink(phone, [heading, "", ...lines].join("\n")), "_blank", "noopener,noreferrer");
   };
 
+  /** Re-check one field and update just its error. */
+  const checkField = (form: HTMLFormElement, name: string) => {
+    const field = fields.find((item) => item.name === name);
+    if (!field) return;
+    const message = validate(field, String(new FormData(form).get(name) ?? ""));
+    setErrors((current) => {
+      const next = { ...current };
+      if (message) next[name] = message;
+      else delete next[name];
+      return next;
+    });
+  };
+
+  // Check a field when the visitor leaves it (only if they typed something),
+  // and keep re-checking while they fix a field that already shows an error.
+  const onBlur = (event: React.FocusEvent<HTMLFormElement>) => {
+    const target = event.target as unknown as HTMLInputElement;
+    if (target.type !== "radio" && target.value?.trim()) checkField(event.currentTarget, target.name);
+  };
+
+  const onChange = (event: React.FormEvent<HTMLFormElement>) => {
+    const target = event.target as HTMLInputElement;
+    if (errors[target.name] || target.type === "radio" || target.tagName === "SELECT") {
+      checkField(event.currentTarget, target.name);
+    }
+  };
+
   return (
     <form
+      noValidate
       onSubmit={onSubmit}
+      onChange={onChange}
+      onBlur={onBlur}
       className={cn("relative overflow-hidden rounded-2xl border border-line bg-bg shadow-lift", className)}
     >
       {/* warm header band */}
@@ -110,34 +190,50 @@ export function WhatsAppForm({
         {fields.map((field) => {
           const fieldId = `${id}-${field.name}`;
           const Icon = field.icon ? icons[field.icon] : null;
+          const error = errors[field.name];
+          const errorId = `${fieldId}-error`;
           const label = (
             <>
               {field.label}
               {field.required ? <span className="text-accent"> *</span> : null}
             </>
           );
+          const errorText = error ? (
+            <p id={errorId} role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              {error}
+            </p>
+          ) : null;
 
           if (field.options && field.options.length <= 3) {
             return (
-              <fieldset key={field.name} className={cn(field.wide && "sm:col-span-2")}>
+              <fieldset
+                key={field.name}
+                aria-describedby={error ? errorId : undefined}
+                className={cn(field.wide && "sm:col-span-2")}
+              >
                 <legend className="mb-2 text-sm font-medium text-ink">{label}</legend>
                 <div className="flex gap-2">
-                  {field.options.map((option, index) => (
+                  {field.options.map((option) => (
                     <label
                       key={option}
-                      className="flex h-12 flex-1 cursor-pointer items-center justify-center rounded-xl border border-line bg-surface text-[15px] font-medium text-muted transition hover:border-accent/50 has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:text-accent has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent/15"
+                      className={cn(
+                        "flex min-h-12 flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border bg-surface px-2 py-1.5 text-center text-[15px] font-medium leading-tight text-muted transition hover:border-accent/50 has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:text-accent has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent/15",
+                        error ? "border-red-500" : "border-line",
+                      )}
                     >
-                      <input
-                        type="radio"
-                        name={field.name}
-                        value={option}
-                        required={field.required && index === 0}
-                        className="sr-only"
-                      />
-                      {option}
+                      <input type="radio" name={field.name} value={option} className="sr-only" />
+                      {/* "Offline (Mumbai only)" shows the bracket as a small second line */}
+                      {option.split(" (")[0]}
+                      {option.includes(" (") ? (
+                        <span className="mt-0.5 text-[11px] font-normal opacity-80">
+                          {option.slice(option.indexOf(" (") + 2, -1)}
+                        </span>
+                      ) : null}
                     </label>
                   ))}
                 </div>
+                {errorText}
               </fieldset>
             );
           }
@@ -159,8 +255,9 @@ export function WhatsAppForm({
                     id={fieldId}
                     name={field.name}
                     defaultValue=""
-                    required={field.required}
-                    className={cn(control, "appearance-none pr-10", Icon ? "pl-10" : "pl-4")}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? errorId : undefined}
+                    className={cn(control, "appearance-none pr-10", Icon ? "pl-10" : "pl-4", error && invalidControl)}
                   >
                     <option value="" disabled>
                       Select one
@@ -177,8 +274,11 @@ export function WhatsAppForm({
                     name={field.name}
                     type={field.type ?? "text"}
                     placeholder={field.placeholder}
-                    required={field.required}
-                    className={cn(control, "pr-4", Icon ? "pl-10" : "pl-4")}
+                    min={field.min}
+                    max={field.max}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? errorId : undefined}
+                    className={cn(control, "pr-4", Icon ? "pl-10" : "pl-4", error && invalidControl)}
                   />
                 )}
                 {field.options ? (
@@ -192,6 +292,7 @@ export function WhatsAppForm({
                   </svg>
                 ) : null}
               </div>
+              {errorText}
             </div>
           );
         })}
